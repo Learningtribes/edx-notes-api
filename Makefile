@@ -1,7 +1,7 @@
 PACKAGES = notesserver notesapi
 .PHONY: requirements
 
-include .travis/docker.mk
+include ci/docker.mk
 
 validate: test.requirements test
 
@@ -12,7 +12,6 @@ test: clean
 		--cover-xml --cover-xml-file=build/coverage/coverage.xml --verbosity=2 \
 		$(foreach package,$(PACKAGES),--cover-package=$(package)) \
 		$(PACKAGES)
-
 run:
 	./manage.py runserver 0.0.0.0:8120
 
