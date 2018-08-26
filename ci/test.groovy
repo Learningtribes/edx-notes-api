@@ -1,21 +1,20 @@
 pipeline {
-    agent {
-        dockerfile {
-            filename 'ci/Dockerfile'
-            -v /var/run/docker.sock:/var/run/docker.sock
-            -v /usr/bin/docker:/usr/bin/docker
-            -v /usr/local/bin/docker-compose:/usr/local/bin/docker-compose
-        }
+    agent any
+    environment {
+        TERM = "xterm-256color"
     }
     stages {
         stage('Test') {
             steps {
-                sh 'make ci_up'
-                sh 'make test'
+                sh "make ci_up"
+                sh 'make ci_test'
+                junit 'nosetests.xml'
+                cobertura coberturaReportFile: '**/build/coverage/coverage.xml', failUnstable: false, maxNumberOfBuilds: 20, onlyStable: false, zoomCoverageChart: false
             }
             post {
                 always {
-                    echo 'something'
+                    sh 'make ci_clean'
+                    sh 'make ci_down'
                 }
             }
         }

@@ -3,5 +3,4 @@
 
 cd /edx/app/edx_notes_api/edx_notes_api
 
-make validate
-
+make clean

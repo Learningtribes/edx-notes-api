@@ -4,7 +4,8 @@
 # Tests / Coverage reports
 .coverage
 .tox
-coverage/
+build
+nosetests.xml
 
 # Sqlite Database
 *.db
@@ -15,3 +16,7 @@ coverage/
 venv/
 
 .idea/
+
+# temporary compose file
+ci/docker-compose.yml
+
