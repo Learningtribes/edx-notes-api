@@ -1,8 +1,5 @@
 pipeline {
     agent any
-    environment {
-        TERM = "xterm-256color"
-    }
     stages {
         stage('Test') {
             steps {
