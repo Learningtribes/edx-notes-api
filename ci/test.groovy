@@ -15,7 +15,6 @@ pipeline {
                 always {
                     sh 'make ci_clean'
                     sh 'make ci_down'
-                    sh '/opt/store_commit_id/bin/python /opt/store_commit_id/store-commit-id.py'
                 }
             }
         }
