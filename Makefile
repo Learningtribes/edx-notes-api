@@ -1,18 +1,18 @@
 PACKAGES = notesserver notesapi
 .PHONY: requirements
 
-include .travis/docker.mk
+include ci/docker.mk
 
 validate: test.requirements test
 
-test: clean
+test:
 	./manage.py test --settings=notesserver.settings.test --with-coverage --with-ignore-docstrings \
 		--exclude-dir=notesserver/settings --cover-inclusive --cover-branches \
 		--cover-html --cover-html-dir=build/coverage/html/ \
 		--cover-xml --cover-xml-file=build/coverage/coverage.xml --verbosity=2 \
+		--with-xunit --xunit-file=nosetests.xml \
 		$(foreach package,$(PACKAGES),--cover-package=$(package)) \
 		$(PACKAGES)
-
 run:
 	./manage.py runserver 0.0.0.0:8120
 
@@ -20,6 +20,9 @@ shell:
 	./manage.py shell
 
 clean:
+	rm -f ci/docker-compose.yml
+	rm -rf build
+	rm -f nosetests.xml
 	coverage erase
 
 quality:
