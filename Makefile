@@ -1,7 +1,7 @@
 PACKAGES = notesserver notesapi
 .PHONY: requirements
 
-include ci/docker.mk
+include ci/ci.mk
 
 validate: test.requirements test
 
