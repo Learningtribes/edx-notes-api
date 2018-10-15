@@ -1,3 +1,4 @@
+# BUILD TAG have to be lower case
 version: "3.5"
 services:
   db${BUILD_TAG}:
