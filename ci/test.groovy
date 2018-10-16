@@ -19,8 +19,8 @@ pipeline {
             }
             post {
                 always {
-                    sh "BUILD_TAG=${BUILD_TAG} make ci_clean"
-                    sh "BUILD_TAG=${BUILD_TAG} make ci_down"
+                    sh "BUILD_TAG=${BUILD_TAG} make ci_clean || true"
+                    sh "BUILD_TAG=${BUILD_TAG} make ci_down || true"
                 }
             }
         }
