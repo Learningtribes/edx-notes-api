@@ -4,7 +4,7 @@ def commitHashForBuild(build) {
   return scmAction?.revision?.hash
 }
 def commitId = null
-def upstreamProjectName = "notes"
+def upstreamProjectName = "edx-notes-api.deploy"
 def selectedIpAddress = null
 def step = null
 def failPercentage = null
@@ -16,7 +16,7 @@ pipeline {
             steps {
                 script {
                     def machine = null
-                    timeout(time: 5) {
+                    timeout(time: 2) {
 
                         // get parameters
                         if(env.GIT_BRANCH =~ "(master|hotfix).*"){
