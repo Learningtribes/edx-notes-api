@@ -3,4 +3,4 @@
 
 cd /edx/app/edx_notes_api/edx_notes_api
 
-make clean
+make clean || true
