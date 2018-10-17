@@ -21,7 +21,6 @@ pipeline {
                 script {
                     def machine = null
                     timeout(time: 2) {
-
                         // get parameters
                         if(env.GIT_BRANCH =~ "(master|hotfix).*"){
                             machine = input message: "environment you want to deploy to?",
@@ -65,17 +64,39 @@ pipeline {
                 }
             }
         }
+        stage("Get Deployment repo") {
+            steps {
+                dir("configuration") {
+                    git credentialsId: 'github', url: 'https://github.com/Learningtribes/configuration.git'
+                    sh """
+                    virtualenv /tmp/.venv
+                    . /tmp/.venv/bin/activate
+                    make requirements
+                    """
+                }
+
+
+            }
+
+        }
         stage("Deploy") {
             steps {
-                sh """
-                cd /edx/app/edx_ansible/edx_ansible/playbooks
-                . ../../venvs/edx_ansible/bin/activate
-                ansible-playbook --ssh-common-args='-o "StrictHostKeyChecking no"' \
-                -u ubuntu -i ${selectedIpAddress} --key-file="/tmp/STAGING_SG.pem" \
-                -e "EDX_NOTES_API_VERSION=${commitId}" -e "serial_count=${step}" \
-                -e "fail_percentage=${failPercentage}" notes.yml
-                """
+                dir("configuration/playbooks") {
+                    sh """
+                    . /tmp/.venv/bin/activate
+                    ansible-playbook --ssh-common-args='-o "StrictHostKeyChecking no"' \
+                    -u ubuntu -i ${selectedIpAddress} --key-file="/tmp/STAGING_SG.pem" \
+                    -e "EDX_NOTES_API_VERSION=${commitId}" -e "serial_count=${step}" \
+                    -e "fail_percentage=${failPercentage}" notes.yml
+                    """
+                }
             }
         }
     }
+    post {
+        always {
+            sh "rm -rf configuration"
+        }
+    }
+
 }
