@@ -10,10 +10,10 @@ ci_start: docker-compose.yml ## Start containers stopped by `travis_stop`
 	docker-compose -f ci/docker-compose.yml start
 
 ci_test: ## Run tests on Docker containers, as on Travis CI
-	docker exec edx_notes_api$(BUILD_ID) /edx/app/edx_notes_api/edx_notes_api/ci/run_tests.sh
+	docker exec edx_notes_api$(BUILD_TAG) /edx/app/edx_notes_api/edx_notes_api/ci/run_tests.sh
 
 ci_clean:
-	docker exec edx_notes_api$(BUILD_ID) /edx/app/edx_notes_api/edx_notes_api/ci/clean_tests.sh
+	docker exec edx_notes_api$(BUILD_TAG) /edx/app/edx_notes_api/edx_notes_api/ci/clean_tests.sh
 
 ci_stop: docker-compose.yml ## Stop running containers created by `travis_up` without removing them
 	docker-compose -f ci/docker-compose.yml stop

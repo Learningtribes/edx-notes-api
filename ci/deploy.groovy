@@ -4,20 +4,23 @@ def commitHashForBuild(build) {
   return scmAction?.revision?.hash
 }
 def commitId = null
-def upstreamProjectName = "notes"
+def upstreamProjectName = "edx-notes-api.deploy"
 def selectedIpAddress = null
 def step = null
 def failPercentage = null
 
 pipeline {
     agent any
+    options {
+        timestamps()
+        withAWS(credentials:'aws')
+    }
     stages {
         stage("Get parameters") {
             steps {
                 script {
                     def machine = null
-                    timeout(time: 5) {
-
+                    timeout(time: 2) {
                         // get parameters
                         if(env.GIT_BRANCH =~ "(master|hotfix).*"){
                             machine = input message: "environment you want to deploy to?",
@@ -34,8 +37,8 @@ pipeline {
 
                             commitId = commitHashForBuild(build)
                         }
-
-                        def ipAddresses = readFile("/tmp/stage.txt").tokenize("\n")
+                        s3Download(file:"/tmp/${machine}.txt", bucket:'ltdps-jenkins', path:"${machine}.txt", force:true)
+                        def ipAddresses = readFile("/tmp/${machine}.txt").tokenize("\n")
                         def para = input message: 'choose machine, use all for full deployment',
                             parameters: [choice(choices: ["all"] + ipAddresses, description: "", name: 'ipAddress'),
                                          string(defaultValue: '1', description: "", name: 'step', trim: true),
@@ -61,17 +64,39 @@ pipeline {
                 }
             }
         }
+        stage("Get Deployment repo") {
+            steps {
+                dir("configuration") {
+                    git credentialsId: 'github', url: 'https://github.com/Learningtribes/configuration.git'
+                    sh """
+                    virtualenv /tmp/.venv
+                    . /tmp/.venv/bin/activate
+                    make requirements
+                    """
+                }
+
+
+            }
+
+        }
         stage("Deploy") {
             steps {
-                sh """
-                cd /edx/app/edx_ansible/edx_ansible/playbooks
-                . ../../venvs/edx_ansible/bin/activate
-                ansible-playbook --ssh-common-args='-o "StrictHostKeyChecking no"' \
-                -u ubuntu -i ${selectedIpAddress} --key-file="/tmp/STAGING_SG.pem" \
-                -e "EDX_NOTES_API_VERSION=${commitId}" -e "serial_count=${step}" \
-                -e "fail_percentage=${failPercentage}" notes.yml
-                """
+                dir("configuration/playbooks") {
+                    sh """
+                    . /tmp/.venv/bin/activate
+                    ansible-playbook --ssh-common-args='-o "StrictHostKeyChecking no"' \
+                    -u ubuntu -i ${selectedIpAddress} --key-file="/tmp/STAGING_SG.pem" \
+                    -e "EDX_NOTES_API_VERSION=${commitId}" -e "serial_count=${step}" \
+                    -e "fail_percentage=${failPercentage}" notes.yml
+                    """
+                }
             }
         }
     }
+    post {
+        always {
+            sh "rm -rf configuration"
+        }
+    }
+
 }
