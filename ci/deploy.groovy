@@ -11,6 +11,10 @@ def failPercentage = null
 
 pipeline {
     agent any
+    options {
+        timestamps()
+        withAWS(credentials:'aws')
+    }
     stages {
         stage("Get parameters") {
             steps {
@@ -34,8 +38,8 @@ pipeline {
 
                             commitId = commitHashForBuild(build)
                         }
-
-                        def ipAddresses = readFile("/tmp/stage.txt").tokenize("\n")
+                        s3Download(file:"/tmp/${machine}.txt", bucket:'ltdps-jenkins', path:"${machine}.txt", force:true)
+                        def ipAddresses = readFile("/tmp/${machine}.txt").tokenize("\n")
                         def para = input message: 'choose machine, use all for full deployment',
                             parameters: [choice(choices: ["all"] + ipAddresses, description: "", name: 'ipAddress'),
                                          string(defaultValue: '1', description: "", name: 'step', trim: true),
